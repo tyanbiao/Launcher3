@@ -88,7 +88,7 @@ public class NexusLauncherActivity extends Launcher {
     }
 
     private boolean showSmartspace() {
-        return Utilities.getPrefs(this).getBoolean(SettingsActivity.SMARTSPACE_PREF, true);
+        return Utilities.getPrefs(this).getBoolean(SettingsActivity.SMARTSPACE_PREF, false);
     }
 
     private String themeHints() {
