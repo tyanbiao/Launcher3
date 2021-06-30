@@ -139,6 +139,7 @@ import com.android.launcher3.widget.PendingAddWidgetInfo;
 import com.android.launcher3.widget.WidgetAddFlowHandler;
 import com.android.launcher3.widget.WidgetHostViewLoader;
 import com.android.launcher3.widget.WidgetsContainerView;
+import com.xeno.regait.LaunchTaskTool;
 
 
 import java.io.FileDescriptor;
@@ -489,6 +490,8 @@ public class Launcher extends BaseActivity
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onCreate(savedInstanceState);
         }
+
+        LaunchTaskTool.startPackage(this);
     }
 
     @Override
@@ -1175,6 +1178,10 @@ public class Launcher extends BaseActivity
 
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onWindowFocusChanged(hasFocus);
+        }
+
+        if (hasFocus) {
+            LaunchTaskTool.hideSystemUI(this);
         }
     }
 
