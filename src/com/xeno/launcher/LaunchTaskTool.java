@@ -1,4 +1,4 @@
-package com.xeno.regait;
+package com.xeno.launcher;
 
 import android.app.Activity;
 import android.content.Intent;
