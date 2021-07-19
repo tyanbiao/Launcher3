@@ -15,6 +15,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.protobuf'
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('D:\\Working\\xeno\\isbara\\keystores\\my-release-key.keystore')
+            storePassword 'ReactNative'
+            keyAlias 'my-key-alias'
+            keyPassword 'ReactNative'
+        }
+    }
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
 

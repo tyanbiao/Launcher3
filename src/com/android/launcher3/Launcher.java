@@ -1179,9 +1179,9 @@ public class Launcher extends BaseActivity
             mLauncherCallbacks.onWindowFocusChanged(hasFocus);
         }
 
-        if (hasFocus) {
-            LaunchTaskTool.hideSystemUI(this);
-        }
+//        if (hasFocus) {
+//            LaunchTaskTool.hideSystemUI(this);
+//        }
     }
 
     private boolean acceptFilter() {
