@@ -142,6 +142,7 @@ import com.xeno.launcher.LaunchTaskTool;
 
 
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -491,6 +492,11 @@ public class Launcher extends BaseActivity
         }
 
         LaunchTaskTool.startPackage(this);
+        try {
+            LaunchTaskTool.initReceiver(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -1179,9 +1185,9 @@ public class Launcher extends BaseActivity
             mLauncherCallbacks.onWindowFocusChanged(hasFocus);
         }
 
-//        if (hasFocus) {
-//            LaunchTaskTool.hideSystemUI(this);
-//        }
+        if (hasFocus) {
+            LaunchTaskTool.hideSystemUI(this);
+        }
     }
 
     private boolean acceptFilter() {
