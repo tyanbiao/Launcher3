@@ -130,3 +130,9 @@
 -keep class com.google.android.apps.nexuslauncher.SettingsActivity$OpenSourceLicensesFragment {
   *;
 }
+
+-keep class com.spd.mdm.manager.MdmManager.** {*;}
+
+-dontwarn org.apache.commons.logging.**
+-ignorewarnings
+
