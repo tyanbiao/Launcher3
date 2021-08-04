@@ -79,7 +79,9 @@ public class LaunchTaskTool {
     public static void initReceiver(Context context) throws IOException {
         Properties properties = new Properties();
         properties.load(context.getAssets().open(PROPERTIES_FILE));
-        boolean checkPower = Boolean.parseBoolean(properties.getProperty(PROPERTY_KEY_CHECK_POWER, "false"));
+        boolean checkPower = Boolean.parseBoolean(properties.getProperty(PROPERTY_KEY_CHECK_POWER, "true"));
+        ShutdownTool.getInstance().setCheckCharging(checkPower);
+
         PowerReceiver powerReceiver = new PowerReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_POWER_CONNECTED);
@@ -88,14 +90,11 @@ public class LaunchTaskTool {
         filter.addAction(Intent.ACTION_BATTERY_OKAY);
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = context.registerReceiver(powerReceiver, filter);
-        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-        boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                status == BatteryManager.BATTERY_STATUS_FULL;
-
-        Log.d(TAG, "checkPower = " + checkPower);
-
-        if (checkPower && !isCharging) {
-            powerReceiver.shutdown();
+        if (batteryStatus != null) {
+            int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+            if (ShutdownTool.getInstance().shouldShutdown(status)) {
+                ShutdownTool.getInstance().shutdown();
+            }
         }
     }
 

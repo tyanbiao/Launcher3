@@ -12,23 +12,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class PowerReceiver extends BroadcastReceiver {
-    private Timer timer;
-    private TimerTask shutdownTask = new TimerTask() {
-        @SuppressLint("LongLogTag")
-        @Override
-        public void run() {
-            try {
-                MdmManager.getInstance().shutdownDevice(); // 关机
-                if (timer != null) {
-                    timer.cancel();
-                    timer = null;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-    };
     @Override
     public void onReceive(Context context, Intent intent) {
         switch (Objects.requireNonNull(intent.getAction())) {
@@ -41,14 +24,8 @@ public class PowerReceiver extends BroadcastReceiver {
     }
 
     void  onPowerDisconnected(Context context, Intent intent) {
-        shutdown();
-    }
-    void shutdown() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
+        if (ShutdownTool.getInstance().getCheckCharging()) {
+            ShutdownTool.getInstance().shutdown();
         }
-        timer = new Timer();
-        timer.schedule(shutdownTask, 900, 1000);
     }
 }

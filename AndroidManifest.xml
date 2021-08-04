@@ -48,6 +48,7 @@
     <uses-permission android:name="com.android.launcher.permission.WRITE_SETTINGS" />
     <uses-permission android:name="${applicationId}.permission.READ_SETTINGS" />
     <uses-permission android:name="${applicationId}.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Custom -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
@@ -141,6 +142,12 @@
             </intent-filter>
         </receiver>
         <receiver android:name="com.google.android.apps.nexuslauncher.qsb.LongClickReceiver" />
+        <receiver android:name="com.xeno.launcher.BootBroadcastReceiver" >
+            <intent-filter >
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </receiver>
         <provider
             android:authorities="${applicationId}.appssearch"
             android:exported="true"
