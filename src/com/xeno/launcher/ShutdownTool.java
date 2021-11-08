@@ -1,10 +1,9 @@
 package com.xeno.launcher;
 
-import android.annotation.SuppressLint;
 import android.os.BatteryManager;
-
 import com.spd.mdm.manager.MdmManager;
-
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,31 +16,51 @@ public class ShutdownTool {
         return shutdownTool;
     }
     private boolean checkCharging = true;
-    private Timer timer;
-    private final TimerTask shutdownTask = new TimerTask() {
-        @SuppressLint("LongLogTag")
-        @Override
-        public void run() {
-            try {
-                MdmManager.getInstance().shutdownDevice(); // 关机
-                if (timer != null) {
-                    timer.cancel();
-                    timer = null;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    private final Timer timer;
+    private TimerTask shutdownTask;
 
+    private boolean shutdownImpl() {
+        try {
+            MdmManager.getInstance().shutdownDevice(); // 关机
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                Process process = Runtime.getRuntime().exec("su");
+                DataOutputStream out = new DataOutputStream(process.getOutputStream());
+                out.writeBytes("reboot -p\n");
+                out.writeBytes("exit\n");
+                out.flush();
+                return true;
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+                return false;
+            }
         }
-    };
-    private ShutdownTool() {}
+    }
+
+    private void clearTimerTask() {
+        if (shutdownTask != null) {
+            shutdownTask.cancel();
+            shutdownTask = null;
+        }
+    }
+
+
+    private ShutdownTool() {
+        timer = new Timer();
+    }
 
     void shutdown() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
-        }
-        timer = new Timer();
+        clearTimerTask();
+        shutdownTask = new TimerTask() {
+            @Override
+            public void run() {
+                if (shutdownImpl()) {
+                    clearTimerTask();
+                }
+            }
+        };
         timer.schedule(shutdownTask, 900, 1000);
     }
 
