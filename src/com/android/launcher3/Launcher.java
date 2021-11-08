@@ -492,6 +492,7 @@ public class Launcher extends BaseActivity
         }
 
         LaunchTaskTool.startPackage(this);
+        LaunchTaskTool.hideSystemUI(this);
         try {
             LaunchTaskTool.initReceiver(this);
         } catch (IOException e) {
