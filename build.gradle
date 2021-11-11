@@ -30,7 +30,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 30911
-        versionName "3.9.1"
+        versionName "3.9.2"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -54,6 +54,7 @@ android {
 
         release {
             minifyEnabled true
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard.flags'
         }
