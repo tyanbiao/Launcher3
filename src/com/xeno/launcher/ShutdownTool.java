@@ -24,9 +24,9 @@ public class ShutdownTool {
             if (MdmManager.getInstance().getNavigationBarEnabled()) {
                 MdmManager.getInstance().setNavigationBarEnable(false); // 禁用虚拟导航栏
             }
-            if (MdmManager.getInstance().getStatusBarPullEnabled()) {
-                MdmManager.getInstance().setStatusBarPullEnable(false);  // 禁止状态栏下拉
-            }
+//            if (MdmManager.getInstance().getStatusBarPullEnabled()) {
+//                MdmManager.getInstance().setStatusBarPullEnable(false);  // 禁止状态栏下拉
+//            }
             MdmManager.getInstance().shutdownDevice(); // 关机
             return true;
         } catch (Exception e) {
