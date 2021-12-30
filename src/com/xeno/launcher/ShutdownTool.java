@@ -18,17 +18,20 @@ public class ShutdownTool {
     private boolean checkCharging = true;
     private final Timer timer;
     private TimerTask shutdownTask;
+    private boolean hasSetNavigationBar = false;
 
     private boolean shutdownImpl() {
         try {
-            if (MdmManager.getInstance().getNavigationBarEnabled()) {
-                MdmManager.getInstance().setNavigationBarEnable(false); // 禁用虚拟导航栏
+            if (hasSetNavigationBar) {
+                MdmManager.getInstance().shutdownDevice(); // 关机
+                return true;
+            } else {
+                if (MdmManager.getInstance().getNavigationBarEnabled()) {
+                    MdmManager.getInstance().setNavigationBarEnable(false); // 禁用虚拟导航栏
+                }
+                hasSetNavigationBar = true;
+                return false;
             }
-//            if (MdmManager.getInstance().getStatusBarPullEnabled()) {
-//                MdmManager.getInstance().setStatusBarPullEnable(false);  // 禁止状态栏下拉
-//            }
-            MdmManager.getInstance().shutdownDevice(); // 关机
-            return true;
         } catch (Exception e) {
             e.printStackTrace();
             try {
