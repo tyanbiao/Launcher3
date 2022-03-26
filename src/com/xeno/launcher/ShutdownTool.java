@@ -18,18 +18,21 @@ public class ShutdownTool {
     private boolean checkCharging = true;
     private final Timer timer;
     private TimerTask shutdownTask;
-    private boolean hasSetNavigationBar = false;
+    private boolean hasPerformedWork = false;
 
     private boolean shutdownImpl() {
         try {
-            if (hasSetNavigationBar) {
+            if (hasPerformedWork) {
                 MdmManager.getInstance().shutdownDevice(); // 关机
                 return true;
             } else {
                 if (MdmManager.getInstance().getNavigationBarEnabled()) {
                     MdmManager.getInstance().setNavigationBarEnable(false); // 禁用虚拟导航栏
                 }
-                hasSetNavigationBar = true;
+                if (MdmManager.getInstance().getWifiEnabled()) {
+                    MdmManager.getInstance().setWifiEnable(false); // 关闭WiFi
+                }
+                hasPerformedWork = true;
                 return false;
             }
         } catch (Exception e) {
