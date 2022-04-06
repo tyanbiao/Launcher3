@@ -1,18 +1,31 @@
 package com.xeno.launcher;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.app.WallpaperManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 
+import com.android.launcher3.R;
+
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 public class LaunchTaskTool {
@@ -20,13 +33,15 @@ public class LaunchTaskTool {
     static final String PROPERTY_KEY_PACKAGE = "package";
     static final String PROPERTY_KEY_CHECK_POWER = "check_power";
     static final String TAG = LaunchTaskTool.class.getSimpleName();
+    private static BroadcastReceiver powerReceiver;
 
-    public static void startPackage(Activity activity) {
+    private static void startPackage(Activity activity) {
         String packageName = getPackageName(activity);
-        if (packageName != null) {
-            Intent intent = activity.getPackageManager().getLaunchIntentForPackage(packageName);
-            activity.startActivity(intent);
+        if (packageName == null) {
+            return;
         }
+        Intent intent = activity.getPackageManager().getLaunchIntentForPackage(packageName);
+        activity.startActivity(intent);
     }
 
     private static String getPackageName(Activity activity) {
@@ -82,7 +97,7 @@ public class LaunchTaskTool {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
-    public static void initReceiver(Context context) throws IOException {
+    private static BroadcastReceiver registerReceiver(final Context context) throws IOException {
         Properties properties = new Properties();
         properties.load(context.getAssets().open(PROPERTIES_FILE));
         boolean checkPower = Boolean.parseBoolean(properties.getProperty(PROPERTY_KEY_CHECK_POWER, "true"));
@@ -102,7 +117,43 @@ public class LaunchTaskTool {
                 ShutdownTool.getInstance().shutdown();
             }
         }
+        return powerReceiver;
     }
 
+    private static void setWallPaper(final Activity activity) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
+        boolean hasSetWallpaper = sharedPref.getBoolean(activity.getString(R.string.save_wallpaper_has_init_key), false);
+        if (hasSetWallpaper) {
+            return;
+        }
 
+        final WallpaperManager wallpaperManager = WallpaperManager.getInstance(activity.getApplicationContext());
+
+        try {
+            DisplayMetrics metrics = new DisplayMetrics();
+            activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+            int height = metrics.heightPixels;
+            int width = metrics.widthPixels;
+            Bitmap bmap2 = BitmapFactory.decodeResource(activity.getResources(), R.drawable.wallpaper);
+            Bitmap bitmap = Bitmap.createScaledBitmap(bmap2, width, height, true);
+            wallpaperManager.setBitmap(bitmap);
+
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putBoolean(activity.getString(R.string.save_wallpaper_has_init_key), true);
+            editor.apply();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void onLauncherStart(Activity activity) throws IOException {
+        startPackage(activity);
+        setWallPaper(activity);
+        powerReceiver = registerReceiver(activity);
+    }
+
+    public static void onLauncherDestroy(Context context) {
+        context.unregisterReceiver(powerReceiver);
+    }
 }

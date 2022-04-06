@@ -365,4 +365,8 @@
         The bridge to connect to the Google Feed could not be found,
         or needs to be updated.
     </string>
+    
+    <string name="save_wallpaper_has_init_key">
+        save_wallpaper_has_init_key
+    </string>
 </resources>

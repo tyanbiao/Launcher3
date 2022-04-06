@@ -491,10 +491,9 @@ public class Launcher extends BaseActivity
             mLauncherCallbacks.onCreate(savedInstanceState);
         }
 
-        LaunchTaskTool.startPackage(this);
-        LaunchTaskTool.hideSystemUI(this);
+//        LaunchTaskTool.hideSystemUI(this);
         try {
-            LaunchTaskTool.initReceiver(this);
+            LaunchTaskTool.onLauncherStart(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1187,7 +1186,7 @@ public class Launcher extends BaseActivity
         }
 
         if (hasFocus) {
-            LaunchTaskTool.hideSystemUI(this);
+//            LaunchTaskTool.hideSystemUI(this);
         }
     }
 
@@ -1846,6 +1845,7 @@ public class Launcher extends BaseActivity
     public void onDestroy() {
         super.onDestroy();
 
+        LaunchTaskTool.onLauncherDestroy(this);
         unregisterReceiver(mReceiver);
         mWorkspace.removeCallbacks(mBuildLayersRunnable);
         mWorkspace.removeFolderListeners();

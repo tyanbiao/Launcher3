@@ -25,7 +25,7 @@ public class PowerReceiver extends BroadcastReceiver {
 
     void  onPowerDisconnected(Context context, Intent intent) {
         if (ShutdownTool.getInstance().getCheckCharging()) {
-            ShutdownTool.getInstance().shutdown();
+            ShutdownTool.getInstance().shutdown(context);
         }
     }
 }
