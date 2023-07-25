@@ -30,7 +30,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 30912
-        versionName "3.9.5"
+        versionName "3.9.6"
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -121,17 +121,21 @@ repositories {
     mavenCentral()
     jcenter()
     google()
-    maven { url 'https://jitpack.io' }
+    repositories {
+        flatDir {
+            dirs 'libs'     // 声明添加libs文件夹为库
+        }
+    }
 }
 
 final String SUPPORT_LIBS_VERSION = '27.1.1'
 dependencies {
+    implementation(name: 'MdmSample-1.0', ext: 'aar')
     implementation "com.android.support:support-v4:${SUPPORT_LIBS_VERSION}"
     implementation "com.android.support:support-dynamic-animation:${SUPPORT_LIBS_VERSION}"
     implementation "com.android.support:recyclerview-v7:${SUPPORT_LIBS_VERSION}"
     implementation "com.android.support:palette-v7:${SUPPORT_LIBS_VERSION}"
     implementation 'com.google.protobuf.nano:protobuf-javanano:3.2.0rc2'
-    implementation 'com.github.SpeedataApp:MdmSample:1.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation "org.mockito:mockito-core:1.10.19"
