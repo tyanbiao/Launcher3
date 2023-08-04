@@ -1,7 +1,6 @@
 package com.xeno.launcher;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,28 +9,19 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.support.annotation.RequiresApi;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
-
 import com.android.launcher3.R;
-
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 
 public class LaunchTaskTool {
-    static final String PROPERTIES_FILE = "application.properties";
-    static final String PROPERTY_KEY_PACKAGE = "package";
-    static final String PROPERTY_KEY_CHECK_POWER = "check_power";
+    static final String PROPERTY_KEY_PACKAGE = "start_package";
     static final String TAG = LaunchTaskTool.class.getSimpleName();
     private static BroadcastReceiver powerReceiver;
 
@@ -46,9 +36,11 @@ public class LaunchTaskTool {
 
     private static String getPackageName(Activity activity) {
         try {
-            Properties properties = new Properties();
-            properties.load(activity.getAssets().open(PROPERTIES_FILE));
-            String packageName = properties.getProperty(PROPERTY_KEY_PACKAGE, null);
+            Properties properties = PropertiesUtil.getProperties();
+            String packageName = null;
+            if (properties != null) {
+                packageName = properties.getProperty(PROPERTY_KEY_PACKAGE, null);
+            }
             if (packageName == null || packageName.length() == 0) {
                 return null;
             }
@@ -60,7 +52,7 @@ public class LaunchTaskTool {
             }
 
             return packageInfo.packageName;
-        } catch (IOException | PackageManager.NameNotFoundException e) {
+        } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
             return null;
         }
@@ -98,11 +90,6 @@ public class LaunchTaskTool {
     }
 
     private static BroadcastReceiver registerReceiver(final Context context) throws IOException {
-        Properties properties = new Properties();
-        properties.load(context.getAssets().open(PROPERTIES_FILE));
-        boolean checkPower = Boolean.parseBoolean(properties.getProperty(PROPERTY_KEY_CHECK_POWER, "true"));
-        ShutdownTool.getInstance().setCheckCharging(checkPower);
-
         PowerReceiver powerReceiver = new PowerReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_POWER_CONNECTED);

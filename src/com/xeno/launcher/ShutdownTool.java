@@ -6,6 +6,7 @@ import android.os.BatteryManager;
 import com.spd.mdm.manager.MdmManager;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -17,11 +18,11 @@ public class ShutdownTool {
         }
         return shutdownTool;
     }
-    private boolean checkCharging = true;
     private final Timer timer;
     private TimerTask shutdownTask;
     private boolean hasPerformedWork = false;
     private boolean isWifiEnabled = false;
+    static final String PROPERTY_KEY_CHECK_POWER = "check_charging";
 
     private boolean shutdownImpl() {
         try {
@@ -87,16 +88,17 @@ public class ShutdownTool {
         shutdown();
     }
 
-    void setCheckCharging(boolean val) {
-        this.checkCharging = val;
-    }
-
     boolean getCheckCharging() {
-        return checkCharging;
+        Properties properties = PropertiesUtil.getProperties();
+        boolean checkPower = true;
+        if (null != properties) {
+            checkPower = Boolean.parseBoolean(properties.getProperty(PROPERTY_KEY_CHECK_POWER, "true"));
+        }
+        return checkPower;
     }
 
     boolean shouldShutdown(int status) {
-        return checkCharging && !isCharging(status);
+        return getCheckCharging() && !isCharging(status);
     }
 
     public static boolean isCharging(int status) {
