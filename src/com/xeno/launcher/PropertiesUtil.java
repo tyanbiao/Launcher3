@@ -12,6 +12,14 @@ import java.util.Properties;
 
 public class PropertiesUtil {
     static final String TAG = "PropertiesUtil";
+    public static final String CHARGING_CONTROLLER_ENABLED = "charging_controller_enabled";
+    public static final String CHARGING_CONTROLLER_MIN = "charging_controller_min";
+    public static final String CHARGING_CONTROLLER_MAX = "charging_controller_max";
+
+    public static final String CHECK_POWER = "check_charging";
+    public static final String START_PACKAGE = "start_package";
+
+
 
     public static Properties getProperties() {
         String root = getInternalStorageRootPath();

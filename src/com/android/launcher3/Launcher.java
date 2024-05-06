@@ -1846,9 +1846,13 @@ public class Launcher extends BaseActivity
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        Intent serviceIntent = new Intent(this, BatteryService.class);
-        stopService(serviceIntent);
+        Log.d(TAG, "onDestroy");
+        try {
+            Intent serviceIntent = new Intent(this, BatteryService.class);
+            stopService(serviceIntent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         unregisterReceiver(mReceiver);
         mWorkspace.removeCallbacks(mBuildLayersRunnable);
         mWorkspace.removeFolderListeners();

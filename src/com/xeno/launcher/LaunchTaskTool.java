@@ -136,7 +136,7 @@ public class LaunchTaskTool {
     }
 
     public static void onLauncherStart(Activity activity) throws IOException {
-        Log.i(TAG, "Launcher start");
+        Log.d(TAG, "Launcher start");
         startPackage(activity);
         setWallPaper(activity);
     }

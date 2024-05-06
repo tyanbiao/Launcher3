@@ -14,7 +14,12 @@ public class ShellCommandExecutor {
         StringBuilder output = new StringBuilder();
         Process process;
 
+        if (!command.endsWith("\n")) {
+            command += "\n";
+        }
+
         try {
+            Log.d(TAG, command);
             process = Runtime.getRuntime().exec(command);
             process.waitFor();
 
@@ -35,6 +40,9 @@ public class ShellCommandExecutor {
     public static String executeRootCommand(String command) throws InterruptedException, IOException {
         Process su = Runtime.getRuntime().exec("su");
         DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
+        if (!command.endsWith("\n")) {
+            command += "\n";
+        }
         outputStream.writeBytes(command);
         outputStream.flush();
         String result = readResult(su.getInputStream());
@@ -47,6 +55,21 @@ public class ShellCommandExecutor {
         } else {
             return error;
         }
+    }
+
+    public static void executeRootCommandsWithoutResult(String[] commands) throws InterruptedException, IOException {
+        Process su = Runtime.getRuntime().exec("su");
+        DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
+        for (String command : commands) {
+            if (!command.endsWith("\n")) {
+                command += "\n";
+            }
+            Log.d(TAG, command);
+            outputStream.writeBytes(command);
+        }
+        outputStream.writeBytes("exit\n");
+        outputStream.flush();
+        su.waitFor();
     }
 
     public static void main(String[] args) {

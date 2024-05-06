@@ -11,6 +11,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.xeno.launcher.acc.ChargingController;
+import com.xeno.launcher.acc.MtkChargingSwitch;
 import com.xeno.launcher.utils.ShellCommandExecutor;
 
 import java.util.Objects;
@@ -22,6 +24,8 @@ public class BatteryService extends Service {
     private final Timer timer;
     private TimerTask checkChargingTask;
     private static final String TAG = "BatteryService";
+
+    private ChargingController chargingController = new ChargingController(new MtkChargingSwitch());
     public BatteryService() {
         timer = new Timer();
     }
@@ -63,7 +67,7 @@ public class BatteryService extends Service {
     }
 
     private void registerPowerReceiver() {
-        powerReceiver = new BootBroadcastReceiver();
+        powerReceiver = new PowerReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_POWER_CONNECTED);
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
@@ -71,10 +75,11 @@ public class BatteryService extends Service {
         filter.addAction(Intent.ACTION_BATTERY_OKAY);
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = registerReceiver(powerReceiver, filter);
-        Log.d(TAG, "registerPowerReceiver");
+        Log.d(TAG, "registerPowerReceiver,batteryStatus==null " + (batteryStatus == null));
         if (batteryStatus != null) {
             int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
             boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL;
+            Log.d(TAG, "isCharging=" + isCharging);
             if (!isCharging) {
                 startCheckAcCharger();
             }
@@ -96,10 +101,10 @@ public class BatteryService extends Service {
     @Override
     public void onDestroy() {
         // The service is no longer used and is being destroyed
+        Log.d(TAG, "onDestroy");
         try {
             if (powerReceiver != null) {
                 unregisterReceiver(powerReceiver);
-                Log.d(TAG, "onDestroy");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -120,11 +125,13 @@ public class BatteryService extends Service {
             // 获取电池的最大电量
             int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
             // 计算电池电量百分比
-            float batteryPercentage = (level / (float) scale) * 100;
+            int batteryPercentage = 100 * level / scale;
             int status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
             boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL;
             int temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
             Log.d(TAG, "action="+intent.getAction()+",temperature="+temperature+",batteryPercentage="+batteryPercentage+",isCharging="+isCharging);
+
+            chargingController.onPowerChange(batteryPercentage, isCharging);
 
             switch (Objects.requireNonNull(intent.getAction())) {
                 // 开始充电，充电线一定是正常的
