@@ -154,12 +154,6 @@
             </intent-filter>
         </receiver>
         <receiver android:name="com.google.android.apps.nexuslauncher.qsb.LongClickReceiver" />
-        <receiver android:name="com.xeno.launcher.BootBroadcastReceiver" >
-            <intent-filter >
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <category android:name="android.intent.category.HOME" />
-            </intent-filter>
-        </receiver>
         <provider
             android:authorities="${applicationId}.appssearch"
             android:exported="true"

@@ -56,7 +56,7 @@ public class BatteryService extends Service {
                 }
             }
         };
-        timer.schedule(checkChargingTask, 1500, 1000);
+        timer.schedule(checkChargingTask, 1500, 1500);
     }
 
     private void stopCheckAcCharger() {
@@ -134,11 +134,11 @@ public class BatteryService extends Service {
             chargingController.onPowerChange(batteryPercentage, isCharging);
 
             switch (Objects.requireNonNull(intent.getAction())) {
-                // 开始充电，充电线一定是正常的
+                // 电池开始充电，控制器一定正常上电
                 case Intent.ACTION_POWER_CONNECTED:
                     stopCheckAcCharger();
                     break;
-                // 停止充电，检查是否是主动停充
+                // 电池停止充电，检查是否是主动停充还是控制器掉电
                 case Intent.ACTION_POWER_DISCONNECTED:
                     startCheckAcCharger();
                     break;

@@ -2,7 +2,6 @@ package com.xeno.launcher;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
-import android.os.BatteryManager;
 import com.spd.mdm.manager.MdmManager;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,7 +21,6 @@ public class ShutdownTool {
     private TimerTask shutdownTask;
     private boolean hasPerformedWork = false;
     private boolean isWifiEnabled = false;
-    static final String PROPERTY_KEY_CHECK_POWER = "check_charging";
 
     private boolean shutdownImpl() {
         try {
@@ -92,26 +90,8 @@ public class ShutdownTool {
         Properties properties = PropertiesUtil.getProperties();
         boolean checkPower = true;
         if (null != properties) {
-            checkPower = Boolean.parseBoolean(properties.getProperty(PROPERTY_KEY_CHECK_POWER, "true"));
+            checkPower = Boolean.parseBoolean(properties.getProperty(PropertiesUtil.CHECK_POWER, "true"));
         }
         return checkPower;
-    }
-
-    boolean shouldShutdown(int status) {
-        return getCheckCharging() && !isCharging(status);
-    }
-
-    public static boolean isCharging(int status) {
-        return status == BatteryManager.BATTERY_STATUS_CHARGING ||
-                status == BatteryManager.BATTERY_STATUS_FULL;
-    }
-
-    private boolean doClearWork(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        boolean isWifiEnabled = wifiManager.isWifiEnabled();
-        if (isWifiEnabled) {
-//            return wifiManager.setWifiEnabled(false);
-        }
-        return isWifiEnabled;
     }
 }
