@@ -15,6 +15,7 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import com.android.launcher3.R;
 import java.io.IOException;
@@ -135,12 +136,8 @@ public class LaunchTaskTool {
     }
 
     public static void onLauncherStart(Activity activity) throws IOException {
+        Log.i(TAG, "Launcher start");
         startPackage(activity);
         setWallPaper(activity);
-        powerReceiver = registerReceiver(activity);
-    }
-
-    public static void onLauncherDestroy(Context context) {
-        context.unregisterReceiver(powerReceiver);
     }
 }

@@ -138,6 +138,7 @@ import com.android.launcher3.widget.PendingAddWidgetInfo;
 import com.android.launcher3.widget.WidgetAddFlowHandler;
 import com.android.launcher3.widget.WidgetHostViewLoader;
 import com.android.launcher3.widget.WidgetsContainerView;
+import com.xeno.launcher.BatteryService;
 import com.xeno.launcher.LaunchTaskTool;
 
 
@@ -493,6 +494,7 @@ public class Launcher extends BaseActivity
 
 //        LaunchTaskTool.hideSystemUI(this);
         try {
+            startService(new Intent(this, BatteryService.class));
             LaunchTaskTool.onLauncherStart(this);
         } catch (IOException e) {
             e.printStackTrace();
@@ -1845,7 +1847,8 @@ public class Launcher extends BaseActivity
     public void onDestroy() {
         super.onDestroy();
 
-        LaunchTaskTool.onLauncherDestroy(this);
+        Intent serviceIntent = new Intent(this, BatteryService.class);
+        stopService(serviceIntent);
         unregisterReceiver(mReceiver);
         mWorkspace.removeCallbacks(mBuildLayersRunnable);
         mWorkspace.removeFolderListeners();

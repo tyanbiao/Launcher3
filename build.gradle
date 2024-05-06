@@ -43,17 +43,26 @@ android {
         debug {
             minifyEnabled false
             applicationIdSuffix ".debug"
+            manifestPlaceholders = [
+                    APP_NAME: "@string/app_name_debug"
+            ]
         }
 
         optimized {
             initWith debug
             minifyEnabled true
+            manifestPlaceholders = [
+                    APP_NAME: "@string/app_name_custom"
+            ]
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard.flags'
         }
 
         release {
             minifyEnabled true
+            manifestPlaceholders = [
+                    APP_NAME: "@string/app_name_custom"
+            ]
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard.flags'
