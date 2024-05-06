@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.android.launcher3.BuildConfig;
 import com.xeno.launcher.acc.ChargingController;
 import com.xeno.launcher.acc.MtkChargingSwitch;
 import com.xeno.launcher.utils.ShellCommandExecutor;
@@ -25,6 +26,7 @@ public class BatteryService extends Service {
     private TimerTask checkChargingTask;
     private static final String TAG = "BatteryService";
 
+    private final String ACTION_AC_DISCONNECTED = BuildConfig.APPLICATION_ID+".AC_DISCONNECTED";
     private ChargingController chargingController = new ChargingController(new MtkChargingSwitch());
     public BatteryService() {
         timer = new Timer();
@@ -116,6 +118,10 @@ public class BatteryService extends Service {
         if (ShutdownTool.getInstance().getCheckCharging()) {
             ShutdownTool.getInstance().shutdown(this);
         }
+        // 发送广播
+        Intent intent = new Intent(ACTION_AC_DISCONNECTED);
+        intent.putExtra("charger_status", chargingController.chargerStatus());
+        sendBroadcast(intent);
     }
 
     public class PowerReceiver extends BroadcastReceiver {

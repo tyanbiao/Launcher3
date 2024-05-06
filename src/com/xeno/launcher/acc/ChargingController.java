@@ -41,4 +41,8 @@ public class ChargingController {
             }
         }
     }
+
+    public boolean chargerStatus() {
+        return chargingSwitch.status();
+    }
 }
