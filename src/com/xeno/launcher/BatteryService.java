@@ -26,8 +26,7 @@ public class BatteryService extends Service {
     private TimerTask checkChargingTask;
     private static final String TAG = "BatteryService";
 
-    private final String ACTION_AC_DISCONNECTED = BuildConfig.APPLICATION_ID+".AC_DISCONNECTED";
-    private ChargingController chargingController = new ChargingController(new MtkChargingSwitch());
+    private final ChargingController chargingController = new ChargingController(new MtkChargingSwitch());
     public BatteryService() {
         timer = new Timer();
     }
@@ -69,6 +68,9 @@ public class BatteryService extends Service {
     }
 
     private void registerPowerReceiver() {
+        if (powerReceiver != null) {
+            unregisterReceiver(powerReceiver);
+        }
         powerReceiver = new PowerReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_POWER_CONNECTED);
@@ -104,12 +106,12 @@ public class BatteryService extends Service {
     public void onDestroy() {
         // The service is no longer used and is being destroyed
         Log.d(TAG, "onDestroy");
-        try {
-            if (powerReceiver != null) {
+        if (powerReceiver != null) {
+            try {
                 unregisterReceiver(powerReceiver);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
         super.onDestroy();
     }
@@ -119,6 +121,7 @@ public class BatteryService extends Service {
             ShutdownTool.getInstance().shutdown(this);
         }
         // 发送广播
+        String ACTION_AC_DISCONNECTED = BuildConfig.APPLICATION_ID + ".AC_DISCONNECTED";
         Intent intent = new Intent(ACTION_AC_DISCONNECTED);
         intent.putExtra("charger_status", chargingController.chargerStatus());
         sendBroadcast(intent);
