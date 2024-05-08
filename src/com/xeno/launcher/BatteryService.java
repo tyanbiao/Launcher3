@@ -1,6 +1,7 @@
 package com.xeno.launcher;
 
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -16,6 +17,7 @@ import com.android.launcher3.BuildConfig;
 import com.xeno.launcher.acc.ChargingController;
 import com.xeno.launcher.acc.MtkChargingSwitch;
 import com.xeno.launcher.acc.PowerSupply;
+import com.xeno.launcher.utils.ServiceUtil;
 
 import java.util.Objects;
 import java.util.Properties;
@@ -23,6 +25,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class BatteryService extends Service {
+    private static final int BATTERY_SERVICE_ID = 0x17;
+
     private static BroadcastReceiver powerReceiver;
     private static final String TAG = "BatteryService";
 
@@ -49,15 +53,24 @@ public class BatteryService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand()");
+    public void onCreate() {
+        Log.d(TAG, "onCreate");
         registerPowerReceiver();
         boolean isPowerSupplyOnline = powerSupply.status();
         Log.d(TAG, "isPowerSupplyOnline="+isPowerSupplyOnline);
         if (!isPowerSupplyOnline) {
             onAcChargingDisconnected();
+        }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand()");
+        Notification notification = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            notification = ServiceUtil.creatNotification(this, BatteryService.class);
+            startForeground(BATTERY_SERVICE_ID, notification);
         }
         return START_STICKY;
     }
