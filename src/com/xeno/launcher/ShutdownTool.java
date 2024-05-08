@@ -20,7 +20,7 @@ public class ShutdownTool {
     private final Timer timer;
     private TimerTask shutdownTask;
     private boolean hasPerformedWork = false;
-    private boolean isWifiEnabled = false;
+    private boolean willCloseWifi = false;
 
     private boolean shutdownImpl() {
         try {
@@ -31,7 +31,8 @@ public class ShutdownTool {
                 if (MdmManager.getInstance().getNavigationBarEnabled()) {
                     MdmManager.getInstance().setNavigationBarEnable(false); // 禁用虚拟导航栏
                 }
-                if (isWifiEnabled) {
+                if (willCloseWifi) {
+                    // 关闭 WiFi
                     MdmManager.getInstance().setWifiEnable(false);
                     MdmManager.getInstance().setWifiEnable(true); // 设置 wifiEnable 为 false 之后导致无法手动开启 wifi，需要再把 wifiEnable 设置为 true
                 } else if (!MdmManager.getInstance().getWifiEnabled()) {
@@ -68,7 +69,8 @@ public class ShutdownTool {
         timer = new Timer();
     }
 
-    void shutdown() {
+    void shutdown(boolean willCloseWifi) {
+        this.willCloseWifi = willCloseWifi;
         clearTimerTask();
         shutdownTask = new TimerTask() {
             @Override
@@ -80,10 +82,8 @@ public class ShutdownTool {
         };
         timer.schedule(shutdownTask, 900, 1000);
     }
-    void shutdown(Context context) {
-        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        isWifiEnabled = wifiManager.isWifiEnabled();
-        shutdown();
+    void shutdown() {
+        shutdown(false);
     }
 
     boolean getCheckCharging() {

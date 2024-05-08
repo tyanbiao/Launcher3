@@ -32,7 +32,7 @@ public class ChargingController {
      * @param percent 电池电量
      * @param isCharging 电池是否在充电
      */
-    public void onPowerChange(int percent, boolean isCharging) {
+    public void onBatteryChanged(int percent, boolean isCharging) {
         if (!enable) {
             Log.d(TAG, "charging controller is disabled");
             return;

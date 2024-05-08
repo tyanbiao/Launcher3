@@ -17,6 +17,7 @@ public class PropertiesUtil {
     public static final String CHARGING_CONTROLLER_MAX = "charging_controller_max";
 
     public static final String CHECK_POWER = "check_charging";
+    public static final String CHECK_CHARGING_DELAY = "check_charging_delay";
     public static final String START_PACKAGE = "start_package";
 
 

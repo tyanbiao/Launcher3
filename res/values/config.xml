@@ -15,7 +15,7 @@
      easily override the app name without providing all translations -->
     <string name="derived_app_name" translatable="false">@string/app_name_rootless_pixel_launcher</string>
 
-    <string name="app_name_custom" translatable="false">Debug Launcher</string>
+    <string name="app_name_custom" translatable="false">Xeno Launcher</string>
     <string name="app_name_debug" translatable="false">Xeno Launcher Debug</string>
 
 

@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class LaunchTaskTool {
-    static final String TAG = LaunchTaskTool.class.getSimpleName();
+    static final String TAG = "LaunchTaskTool";
 
     private static void startPackage(Activity activity) {
         String packageName = getPackageName(activity);

@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -14,21 +15,33 @@ import android.util.Log;
 import com.android.launcher3.BuildConfig;
 import com.xeno.launcher.acc.ChargingController;
 import com.xeno.launcher.acc.MtkChargingSwitch;
-import com.xeno.launcher.utils.ShellCommandExecutor;
+import com.xeno.launcher.acc.PowerSupply;
 
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class BatteryService extends Service {
     private static BroadcastReceiver powerReceiver;
-    private final Timer timer;
-    private TimerTask checkChargingTask;
     private static final String TAG = "BatteryService";
+
+    private final Timer timer;
+    private final int POWER_SUPPLY_DELAY;
+    private TimerTask task = null;
+
+    private final PowerSupply powerSupply = new PowerSupply(PowerSupply.AC);
 
     private final ChargingController chargingController = new ChargingController(new MtkChargingSwitch());
     public BatteryService() {
         timer = new Timer();
+        Properties properties = PropertiesUtil.getProperties();
+        int defaultDelay = 1100;
+        if (properties != null) {
+            POWER_SUPPLY_DELAY = Integer.parseInt(properties.getProperty(PropertiesUtil.CHECK_CHARGING_DELAY, String.valueOf(defaultDelay)));
+        } else {
+            POWER_SUPPLY_DELAY = defaultDelay;
+        }
     }
 
     @Nullable
@@ -41,30 +54,12 @@ public class BatteryService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand()");
         registerPowerReceiver();
-        return START_STICKY;
-    }
-
-    private void startCheckAcCharger() {
-        stopCheckAcCharger();
-        checkChargingTask = new TimerTask() {
-            @Override
-            public void run() {
-                boolean res = isAcChargerOnline();
-                Log.d(TAG, "isAcChargerOnline=" + res);
-                if (!res) {
-                    stopCheckAcCharger();
-                    onAcChargerDisconnected();
-                }
-            }
-        };
-        timer.schedule(checkChargingTask, 1500, 1500);
-    }
-
-    private void stopCheckAcCharger() {
-        if (checkChargingTask != null) {
-            checkChargingTask.cancel();
-            checkChargingTask = null;
+        boolean isPowerSupplyOnline = powerSupply.status();
+        Log.d(TAG, "isPowerSupplyOnline="+isPowerSupplyOnline);
+        if (!isPowerSupplyOnline) {
+            onAcChargingDisconnected();
         }
+        return START_STICKY;
     }
 
     private void registerPowerReceiver() {
@@ -80,26 +75,6 @@ public class BatteryService extends Service {
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = registerReceiver(powerReceiver, filter);
         Log.d(TAG, "registerPowerReceiver,batteryStatus==null " + (batteryStatus == null));
-        if (batteryStatus != null) {
-            int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
-            boolean isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL;
-            Log.d(TAG, "isCharging=" + isCharging);
-            if (!isCharging) {
-                startCheckAcCharger();
-            }
-        }
-    }
-
-    private boolean isAcChargerOnline() {
-        try {
-            String cmd = "cat /sys/class/power_supply/ac/online\n";
-//            String cmd2 = "dumpsys battery | egrep 'powered: true'\n";
-            String res = ShellCommandExecutor.executeCommand(cmd);
-            return  res.equals("1");
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
     }
 
     @Override
@@ -116,15 +91,44 @@ public class BatteryService extends Service {
         super.onDestroy();
     }
 
-    void  onAcChargerDisconnected() {
-        if (ShutdownTool.getInstance().getCheckCharging()) {
-            ShutdownTool.getInstance().shutdown(this);
+    void  onAcChargingDisconnected() {
+        if (task != null) {
+            task.cancel();
+            task = null;
         }
-        // 发送广播
-        String ACTION_AC_DISCONNECTED = BuildConfig.APPLICATION_ID + ".AC_DISCONNECTED";
-        Intent intent = new Intent(ACTION_AC_DISCONNECTED);
-        intent.putExtra("charger_status", chargingController.chargerStatus());
-        sendBroadcast(intent);
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                Log.d(TAG, "AC Charging Disconnected");
+                if (ShutdownTool.getInstance().getCheckCharging()) {
+                    WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                    boolean willCloseWifi = wifiManager != null && wifiManager.isWifiEnabled();
+                    ShutdownTool.getInstance().shutdown(willCloseWifi);
+                    // 发送广播
+                    String ACTION_AC_DISCONNECTED = BuildConfig.APPLICATION_ID + ".AC_DISCONNECTED";
+                    Intent intent = new Intent(ACTION_AC_DISCONNECTED);
+                    intent.putExtra("charger_status", chargingController.chargerStatus());
+                    sendBroadcast(intent);
+                }
+                task = null;
+            }
+        };
+        timer.schedule(task, POWER_SUPPLY_DELAY);
+    }
+
+    void onAcChargingConnected() {
+        if (task != null) {
+            task.cancel();
+            task = null;
+            return;
+        }
+        Log.d(TAG, "AC Charging Connected");
+        if (ShutdownTool.getInstance().getCheckCharging()) {
+            String ACTION_AC_CONNECTED = BuildConfig.APPLICATION_ID + ".AC_CONNECTED";
+            Intent intent = new Intent(ACTION_AC_CONNECTED);
+            intent.putExtra("charger_status", chargingController.chargerStatus());
+            sendBroadcast(intent);
+        }
     }
 
     public class PowerReceiver extends BroadcastReceiver {
@@ -140,16 +144,17 @@ public class BatteryService extends Service {
             int temperature = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0);
             Log.d(TAG, "action="+intent.getAction()+",temperature="+temperature+",batteryPercentage="+batteryPercentage+",isCharging="+isCharging);
 
-            chargingController.onPowerChange(batteryPercentage, isCharging);
-
             switch (Objects.requireNonNull(intent.getAction())) {
-                // 电池开始充电，控制器一定正常上电
+                // 只有电源插上时才会发送此事件，主动充电不会触发
                 case Intent.ACTION_POWER_CONNECTED:
-                    stopCheckAcCharger();
+                    onAcChargingConnected();
                     break;
-                // 电池停止充电，检查是否是主动停充还是控制器掉电
+                // 只有外部电源断开时才会发送此事件，主动停充不会触发
                 case Intent.ACTION_POWER_DISCONNECTED:
-                    startCheckAcCharger();
+                    onAcChargingDisconnected();
+                    break;
+                case Intent.ACTION_BATTERY_CHANGED:
+                    chargingController.onBatteryChanged(batteryPercentage, isCharging);
                     break;
             }
         }
