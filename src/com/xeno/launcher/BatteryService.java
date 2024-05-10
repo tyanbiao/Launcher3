@@ -34,7 +34,7 @@ public class BatteryService extends Service {
     private final int POWER_SUPPLY_DELAY;
     private TimerTask task = null;
 
-    private final PowerSupply powerSupply = new PowerSupply(PowerSupply.AC);
+    private final PowerSupply powerSupply = new PowerSupply(new String[] { PowerSupply.AC, PowerSupply.USB });
 
     private final ChargingController chargingController = new ChargingController(new MtkChargingSwitch());
     public BatteryService() {
