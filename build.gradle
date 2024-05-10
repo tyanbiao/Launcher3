@@ -67,6 +67,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'),
                     'proguard.flags'
         }
+        def sha = 'git rev-parse --short HEAD'.execute().getText().trim()
+        applicationVariants.all { variant ->
+            variant.outputs.each { output ->
+                output.outputFileName = "Launcher3 v" + versionName + "_" + variant.flavorName+"_"+variant.buildType.name+".apk"
+            }
+        }
     }
 
     productFlavors {
