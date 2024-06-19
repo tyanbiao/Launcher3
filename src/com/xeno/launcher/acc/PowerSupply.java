@@ -11,15 +11,24 @@ public class PowerSupply {
     public static final String AC = "/sys/class/power_supply/ac/online";
 
     public static final String USB = "/sys/class/power_supply/usb/online";
+    public static final String BATTERY_STATUS_PATH = "/sys/class/power_supply/battery/status";
 
     private final String[] types;
 
     private static final int FLAG_ON = 1;
     private static final int FLAG_OFF = 0;
+
+    static final String BATTERY_STATUS_CHARGING = "Charging";
+    static final String BATTERY_STATUS_NOT_CHARGING = "Not charging";
+    static final String BATTERY_STATUS_DISCHARGING = "Discharging";
     public PowerSupply(String[] types) {
         this.types = types;
     }
     public boolean status() {
+        String result = ShellCommandExecutor.executeCommand("cat " + BATTERY_STATUS_PATH);
+        if (result.trim().equals(BATTERY_STATUS_CHARGING)) {
+            return true;
+        }
         for (String type : types) {
             if (cat(type) == FLAG_ON) {
                 return true;
