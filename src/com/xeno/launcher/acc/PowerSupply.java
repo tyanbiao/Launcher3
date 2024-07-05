@@ -26,9 +26,17 @@ public class PowerSupply {
     }
     public boolean status() {
         String result = ShellCommandExecutor.executeCommand("cat " + BATTERY_STATUS_PATH);
-        if (result.trim().equals(BATTERY_STATUS_CHARGING)) {
-            return true;
+        String content = result.trim();
+        switch (content) {
+            case BATTERY_STATUS_CHARGING:
+            case BATTERY_STATUS_NOT_CHARGING:
+                return true;
+            case BATTERY_STATUS_DISCHARGING:
+                return false;
+            default:
+                Log.d(TAG, content);
         }
+
         for (String type : types) {
             if (cat(type) == FLAG_ON) {
                 return true;

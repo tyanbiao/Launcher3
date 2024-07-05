@@ -37,23 +37,30 @@ public class ShellCommandExecutor {
         return output.toString().trim();
     }
 
-    public static String executeRootCommand(String command) throws InterruptedException, IOException {
-        Process su = Runtime.getRuntime().exec("su");
-        DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
-        if (!command.endsWith("\n")) {
-            command += "\n";
-        }
-        outputStream.writeBytes(command);
-        outputStream.flush();
-        String result = readResult(su.getInputStream());
-        Log.d(TAG, "result: \n" + result);
-        String error = readResult(su.getErrorStream());
-        su.waitFor();
-        int exitValue = su.exitValue();
-        if (exitValue == 0) {
-            return result;
-        } else {
-            return error;
+    public static String executeRootCommand(String command)  {
+        try {
+            Process su = Runtime.getRuntime().exec("su");
+            DataOutputStream outputStream = new DataOutputStream(su.getOutputStream());
+            if (!command.endsWith("\n")) {
+                command += "\n";
+            }
+            Log.d(TAG, command);
+            outputStream.writeBytes(command);
+            outputStream.writeBytes("exit\n");
+            outputStream.flush();
+            su.waitFor();
+            String result = readResult(su.getInputStream());
+            String error = readResult(su.getErrorStream());
+            int exitValue = su.exitValue();
+            if (exitValue == 0) {
+                Log.d(TAG, "result: \n" + result);
+                return result;
+            } else {
+                Log.d(TAG, "error: \n" + error);
+                return error;
+            }
+        } catch (IOException | InterruptedException e) {
+            return null;
         }
     }
 

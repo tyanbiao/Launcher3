@@ -2,7 +2,12 @@ package com.xeno.launcher;
 
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.util.Log;
+
 import com.spd.mdm.manager.MdmManager;
+import com.xeno.launcher.utils.ShellCommandExecutor;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -10,6 +15,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class ShutdownTool {
+    static final String TAG = "ShutdownTool";
+    static final int OFF_TYPE_REBOOT = 1;
+    static final int OFF_TYPE_POWER_SHUTDOWN = 2;
+
+    static final int OFF_TYPE_SPD_SHUTDOWN = 3;
+    private int offType = OFF_TYPE_REBOOT;
     private static ShutdownTool shutdownTool;
     public static ShutdownTool getInstance() {
         if (shutdownTool == null) {
@@ -25,18 +36,45 @@ public class ShutdownTool {
     private boolean shutdownImpl() {
         try {
             if (hasPerformedWork) {
-                MdmManager.getInstance().shutdownDevice(); // 关机
+                switch (offType) {
+                    case OFF_TYPE_REBOOT:
+                        ShellCommandExecutor.executeRootCommand("reboot -p");
+                        break;
+                    case OFF_TYPE_POWER_SHUTDOWN:
+                        ShellCommandExecutor.executeRootCommand("svc power shutdown");
+                        break;
+                    case OFF_TYPE_SPD_SHUTDOWN:
+                        MdmManager.getInstance().shutdownDevice(); // SD55 关机
+                        break;
+                }
                 return true;
             } else {
-                if (MdmManager.getInstance().getNavigationBarEnabled()) {
-                    MdmManager.getInstance().setNavigationBarEnable(false); // 禁用虚拟导航栏
-                }
-                if (willCloseWifi) {
-                    // 关闭 WiFi
-                    MdmManager.getInstance().setWifiEnable(false);
-                    MdmManager.getInstance().setWifiEnable(true); // 设置 wifiEnable 为 false 之后导致无法手动开启 wifi，需要再把 wifiEnable 设置为 true
-                } else if (!MdmManager.getInstance().getWifiEnabled()) {
-                    MdmManager.getInstance().setWifiEnable(true);
+                if (Build.VERSION.SDK_INT < 30) {
+                    if (MdmManager.getInstance().getNavigationBarEnabled()) {
+                        MdmManager.getInstance().setNavigationBarEnable(false); // 禁用虚拟导航栏
+                    }
+                    if (willCloseWifi) {
+                        // 关闭 WiFi
+                        MdmManager.getInstance().setWifiEnable(false);
+                        MdmManager.getInstance().setWifiEnable(true); // 设置 wifiEnable 为 false 之后导致无法手动开启 wifi，需要再把 wifiEnable 设置为 true
+                    } else if (!MdmManager.getInstance().getWifiEnabled()) {
+                        MdmManager.getInstance().setWifiEnable(true);
+                    }
+                    offType = OFF_TYPE_SPD_SHUTDOWN;
+                } else {
+                    if (willCloseWifi) {
+                        ShellCommandExecutor.executeRootCommand("svc wifi disable");
+                    }
+                    String ret = ShellCommandExecutor.executeRootCommand("pm list packages -d | grep com.android.systemui");
+                    Log.d(TAG, ret);
+                    if (ret != null && ret.contains("com.android.systemui")) {
+                        // 已经禁用 systemui
+                        offType = OFF_TYPE_REBOOT;
+                    } else {
+                        // 未禁用 systemui
+                        ShellCommandExecutor.executeRootCommand("pm disable com.android.systemui");
+                        offType = OFF_TYPE_POWER_SHUTDOWN;
+                    }
                 }
                 hasPerformedWork = true;
                 return false;
