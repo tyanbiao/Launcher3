@@ -1,13 +1,16 @@
 package com.xeno.launcher;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Properties;
 
 public class PropertiesUtil {
@@ -20,6 +23,7 @@ public class PropertiesUtil {
     public static final String CHECK_CHARGING_DELAY = "check_charging_delay";
     public static final String START_PACKAGE = "start_package";
 
+    private static final String FILE_PATH = "/xeno/regait/config.properties";
 
 
     public static Properties getProperties() {
@@ -27,7 +31,7 @@ public class PropertiesUtil {
         if (root == null) {
             return null;
         }
-        String filepath = root + "/xeno/regait/config.properties";
+        String filepath = root + FILE_PATH;
         File file = new File(filepath);
         return getProperties(file);
     }
@@ -47,6 +51,35 @@ public class PropertiesUtil {
             e.printStackTrace();
             Log.e(TAG,"获取配置文件失败{0}", e);
             return null;
+        }
+    }
+
+    public static boolean initPropertiesFile(Context context) {
+        try {
+            String root = getInternalStorageRootPath();
+            if (root == null) {
+                return false;
+            }
+            String filepath = root + FILE_PATH;
+            File target = new File(filepath);
+            if (target.exists()) {
+                return false;
+            }
+            InputStream in = context.getAssets().open("configure.properties");
+            OutputStream out = new FileOutputStream(target);
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+
+            in.close();
+            out.flush();
+            out.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
