@@ -35,7 +35,7 @@ public class PropertiesUtil {
         File file = new File(filepath);
         return getProperties(file);
     }
-    public static Properties getProperties(File file) {
+    private static Properties getProperties(File file) {
         try {
             Properties temp = new Properties();
             if (!file.exists()) {

@@ -36,9 +36,10 @@ public class BatteryService extends Service {
 
     private final PowerSupply powerSupply = new PowerSupply(new String[] { PowerSupply.AC, PowerSupply.USB });
 
-    private final ChargingController chargingController = new ChargingController(new MtkChargingSwitch());
+    private final ChargingController chargingController;
     public BatteryService() {
         timer = new Timer();
+        PropertiesUtil.initPropertiesFile(this);
         Properties properties = PropertiesUtil.getProperties();
         int defaultDelay = 1100;
         if (properties != null) {
@@ -46,6 +47,7 @@ public class BatteryService extends Service {
         } else {
             POWER_SUPPLY_DELAY = defaultDelay;
         }
+        chargingController = new ChargingController(new MtkChargingSwitch());
     }
 
     @Nullable
