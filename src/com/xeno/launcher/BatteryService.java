@@ -79,7 +79,11 @@ public class BatteryService extends Service {
 
     private void registerPowerReceiver() {
         if (powerReceiver != null) {
-            unregisterReceiver(powerReceiver);
+            try {
+                getApplicationContext().unregisterReceiver(powerReceiver);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         powerReceiver = new PowerReceiver();
         IntentFilter filter = new IntentFilter();
@@ -88,7 +92,7 @@ public class BatteryService extends Service {
         filter.addAction(Intent.ACTION_BATTERY_LOW);
         filter.addAction(Intent.ACTION_BATTERY_OKAY);
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatus = registerReceiver(powerReceiver, filter);
+        Intent batteryStatus = getApplicationContext().registerReceiver(powerReceiver, filter);
         Log.d(TAG, "registerPowerReceiver,batteryStatus==null " + (batteryStatus == null));
     }
 
@@ -98,7 +102,8 @@ public class BatteryService extends Service {
         Log.d(TAG, "onDestroy");
         if (powerReceiver != null) {
             try {
-                unregisterReceiver(powerReceiver);
+                getApplicationContext().unregisterReceiver(powerReceiver);
+                powerReceiver = null;
             } catch (Exception e) {
                 e.printStackTrace();
             }

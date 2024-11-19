@@ -2,6 +2,7 @@ package com.xeno.launcher;
 
 import android.app.Activity;
 import android.app.WallpaperManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -14,7 +15,12 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import com.android.launcher3.R;
+
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Properties;
 
 public class LaunchTaskTool {
@@ -116,5 +122,23 @@ public class LaunchTaskTool {
         PropertiesUtil.initPropertiesFile(activity);
         startPackage(activity);
         setWallPaper(activity);
+        saveLog(activity.getApplicationContext());
+    }
+
+    private static Process saveLog(Context context) {
+        try {
+            File cacheDir = context.getExternalCacheDir();
+            if (!cacheDir.exists()) {
+                return null;
+            }
+            int pid = android.os.Process.myPid();
+            SimpleDateFormat filenameDateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.CHINA);
+            String filename = cacheDir.getAbsolutePath() + "/" + filenameDateFormat.format(new Date()) + ".log";
+            String cmd =  "logcat --pid=" + pid + " --file=" + filename;
+            Process process = Runtime.getRuntime().exec(cmd);
+            return process;
+        } catch (IOException e) {
+            return null;
+        }
     }
 }
