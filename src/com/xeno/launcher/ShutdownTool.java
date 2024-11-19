@@ -55,8 +55,10 @@ public class ShutdownTool {
                     }
                     if (willCloseWifi) {
                         // 关闭 WiFi
-                        MdmManager.getInstance().setWifiEnable(false);
-                        MdmManager.getInstance().setWifiEnable(true); // 设置 wifiEnable 为 false 之后导致无法手动开启 wifi，需要再把 wifiEnable 设置为 true
+                        ShellCommandExecutor.executeRootCommand("svc wifi disable");
+
+//                        MdmManager.getInstance().setWifiEnable(false);
+//                        MdmManager.getInstance().setWifiEnable(true); // 设置 wifiEnable 为 false 之后导致无法手动开启 wifi，需要再把 wifiEnable 设置为 true
                     } else if (!MdmManager.getInstance().getWifiEnabled()) {
                         MdmManager.getInstance().setWifiEnable(true);
                     }
