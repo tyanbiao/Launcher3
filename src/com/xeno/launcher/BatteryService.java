@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -108,7 +109,21 @@ public class BatteryService extends Service {
                 e.printStackTrace();
             }
         }
+        restartService();
         super.onDestroy();
+    }
+
+    private void restartService() {
+        try {
+            Intent intent = new Intent(this, BatteryService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     void  onAcChargingDisconnected() {

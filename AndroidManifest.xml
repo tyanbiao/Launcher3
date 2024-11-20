@@ -21,7 +21,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.android.launcher3">
-    <uses-sdk android:targetSdkVersion="23" android:minSdkVersion="21"/>
+    <uses-sdk android:targetSdkVersion="25" android:minSdkVersion="21"/>
     <!--
     Manifest entries specific to Launcher3. This is merged with AndroidManifest-common.xml.
     Refer comments around specific entries on how to extend individual components.
@@ -63,7 +63,6 @@
 
     <uses-permission android:name="android.permission.DUMP" tools:ignore="ProtectedPermissions" />
 
-
     <application
         android:backupAgent="com.android.launcher3.LauncherBackupAgent"
         android:fullBackupOnly="true"
@@ -80,7 +79,7 @@
         Main launcher activity. When extending only change the name, and keep all the
         attributes and intent filters the same
         -->
-        <service android:name="com.xeno.launcher.BatteryService" />
+        <service android:name="com.xeno.launcher.BatteryService" android:process=":daemon" android:exported="true" />
         <activity
             android:name="com.google.android.apps.nexuslauncher.NexusLauncherActivity"
             android:launchMode="singleTask"
@@ -158,7 +157,14 @@
             android:authorities="${applicationId}.appssearch"
             android:exported="true"
             android:name="com.google.android.apps.nexuslauncher.search.AppSearchProvider" />
-
+        <receiver
+            android:name="com.xeno.launcher.PowerReceiver"
+            android:exported="true">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
         <!--
         Custom
         -->

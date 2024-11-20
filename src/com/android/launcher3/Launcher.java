@@ -497,7 +497,7 @@ public class Launcher extends BaseActivity
         try {
             startService(new Intent(this, BatteryService.class));
             LaunchTaskTool.onLauncherStart(this);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

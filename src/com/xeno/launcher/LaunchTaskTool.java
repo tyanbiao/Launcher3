@@ -137,7 +137,7 @@ public class LaunchTaskTool {
             String cmd =  "logcat --pid=" + pid + " --file=" + filename;
             Process process = Runtime.getRuntime().exec(cmd);
             return process;
-        } catch (IOException e) {
+        } catch (Exception e) {
             return null;
         }
     }

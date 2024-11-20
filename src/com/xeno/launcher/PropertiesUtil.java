@@ -77,7 +77,7 @@ public class PropertiesUtil {
             out.flush();
             out.close();
             return true;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
